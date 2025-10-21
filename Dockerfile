@@ -1,17 +1,18 @@
 # --- Build stage (Composer + Node, если надо собрать фронт) ---
-FROM php:8.3-fpm AS phpbase
+FROM php:8.3-fpm
 
 RUN apt-get update && apt-get install -y \
     git unzip zip curl libpng-dev libonig-dev libxml2-dev libzip-dev \
-    libjpeg62-turbo-dev libfreetype6-dev libonig-dev libicu-dev g++ \
+    libjpeg62-turbo-dev libfreetype6-dev libonig-dev libicu-dev g++ libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
+    && docker-php-ext-install pdo_mysql pdo_pgsql pgsql mbstring exif pcntl bcmath gd zip intl \
+    && rm -rf /var/lib/apt/lists/*
 
 # Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-
+RUN echo "APP_ENV=production" > .env
 # Копируем весь код, чтобы artisan был доступен
 COPY . .
 
