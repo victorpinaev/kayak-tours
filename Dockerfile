@@ -11,8 +11,12 @@ RUN apt-get update && apt-get install -y \
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --prefer-dist --no-interaction --no-progress
+
+# Копируем весь код, чтобы artisan был доступен
+COPY . .
+
+# Устанавливаем зависимости
+RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader
 
 # Если есть front и Vite — собери (иначе этот блок можно удалить)
 FROM node:20 AS assets
